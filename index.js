@@ -15,7 +15,7 @@ app.use(cors({ optionsSuccessStatus: 200 })); // some legacy browsers choke on 2
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/api/shorturl', function (req, res) {
+app.post('/api/shorturl', function (req, res) {
   const url = req.body.url;
   if (reverseUrlMap.has(url)) {
     const shortUrl = reverseUrlMap.get(url);
