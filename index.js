@@ -17,6 +17,7 @@ app.use(bodyParser.json());
 
 app.post('/api/shorturl', function (req, res) {
   const url = req.body.url;
+  console.log(url);
   if (reverseUrlMap.has(url)) {
     const shortUrl = reverseUrlMap.get(url);
     return res.json({
@@ -24,29 +25,28 @@ app.post('/api/shorturl', function (req, res) {
       short_url: shortUrl
     });
   }
-  let hostname = null;
   try {
-    hostname = new URL(url).hostname;
+    const hostname = new URL(url).hostname;
+    dns.lookup(hostname, (err, address) => {
+      if (err) {
+        return res.status(422).json({
+          error: "invalid url"
+        });
+      } else {
+        const shortUrl = `${++topId}`;
+        reverseUrlMap.set(url, shortUrl);
+        shortenedUrls.set(shortUrl, url);
+        return res.json({
+          original_url: url,
+          short_url: shortUrl
+        });
+      }
+    });
   } catch (error) {
     return res.status(422).json({
       error: 'invalid url'
     });
   }
-  dns.lookup(hostname, (err, address) => {
-    if (err) {
-      return res.status(422).json({
-        error: "Invalid Hostname"
-      });
-    } else {
-      const shortUrl = `${++topId}`;
-      reverseUrlMap.set(url, shortUrl);
-      shortenedUrls.set(shortUrl, url);
-      return res.json({
-        original_url: url,
-        short_url: shortUrl
-      });
-    }
-  });
 });
 
 app.get('/api/shorturl/:shortUrl', function (req, res) {
