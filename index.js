@@ -24,11 +24,17 @@ app.post('/api/shorturl', function (req, res) {
       short_url: shortUrl
     });
   }
-  const hostname = new URL(url).hostname;
+  let hostname = null;
+  try {
+    hostname = new URL(url).hostname;
+  } catch (error) {
+    return res.status(422).json({
+      error: 'invalid url'
+    });
+  }
   dns.lookup(hostname, (err, address) => {
     if (err) {
-      console.error(err);
-      return res.json({
+      return res.status(422).json({
         error: "Invalid Hostname"
       });
     } else {
@@ -46,7 +52,7 @@ app.post('/api/shorturl', function (req, res) {
 app.get('/api/shorturl/:shortUrl', function (req, res) {
   const shortUrl = req.params.shortUrl;
   if (!shortenedUrls.has(shortUrl)) {
-    return res.json({
+    return res.status(422).json({
       error: "No short URL found for the given input"
     });
   } else {
